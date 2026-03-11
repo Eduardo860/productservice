@@ -1,48 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
-    <Properties>
-        <Property name="LOG_PATTERN">%d{HH:mm:ss} %-5level %logger{36} - %msg%n</Property>
-        <Property name="APP_NAME">productservice</Property>
-        <Property name="LOG_GROUP_NAME">producto-log-group</Property>
-        <Property name="LOG_STREAM_NAME">producto-service-stream</Property>
-    </Properties>
-
+<Configuration packages="com.amazonaws.cloudwatch.log4j2">
     <Appenders>
-        <!-- Console Appender -->
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="${LOG_PATTERN}" />
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{ISO8601} [%t] %-5p %c{1} - %m%n" />
         </Console>
-
-        <!-- CloudWatch Appender -->
-        <CloudWatchLogs name="CloudWatch">
-            <PatternLayout pattern="${LOG_PATTERN}" />
-            <logGroupName>${LOG_GROUP_NAME}</logGroupName>
-            <logStreamName>${LOG_STREAM_NAME}</logStreamName>
-            <region>us-east-1</region>
-            <endpoint>${env:CLOUDWATCH_ENDPOINT:-}</endpoint>
-            <createLogGroup>false</createLogGroup>
-            <queueLength>1000</queueLength>
-            <blockWhenQueueFull>false</blockWhenQueueFull>
-        </CloudWatchLogs>
+        <CloudWatchAppender name="CloudWatchAppender"
+                logGroupName="producto-log-group"
+                logStreamName="producto-service-stream"
+                awsAccessKeyId="${AWS_ACCESS_KEY_ID}"
+                awsSecretKey="${AWS_SECRET_ACCESS_KEY}"
+                awsRegion="${AWS_REGION:us-east-1}"
+                cloudWatchEndpoint="${CLOUDWATCH_ENDPOINT}">
+            <PatternLayout pattern="%d{ISO8601} [%t] %-5p %c{1} - %m%n" />
+        </CloudWatchAppender>
     </Appenders>
 
     <Loggers>
-        <!-- Root Logger -->
-        <Root level="info">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="CloudWatch"/>
+        <Root level="INFO">
+            <AppenderRef ref="ConsoleAppender" />
+            <AppenderRef ref="CloudWatchAppender" />
         </Root>
-
-        <!-- Spring Framework Logging -->
-        <Logger name="org.springframework" level="info" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="CloudWatch"/>
-        </Logger>
-
-        <!-- Application Logging -->
-        <Logger name="com.microservices.productservice" level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="CloudWatch"/>
-        </Logger>
+        <Logger name="com.microservices.productservice" level="DEBUG" />
     </Loggers>
 </Configuration>
